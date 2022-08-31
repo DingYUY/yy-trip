@@ -1,0 +1,9 @@
+/* :root使得所有人都可以访问 */
+/* 前缀加--自定义属性 */
+:root {
+  --primary-color: #ff9854;
+}
+
+body {
+  font-size: 14px;
+}
