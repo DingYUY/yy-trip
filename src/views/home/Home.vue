@@ -1,5 +1,5 @@
 <template>
-  <div class="home">
+  <div class="home" ref="homeRef">
     <home-nav-bar></home-nav-bar>
     <div class="banner">
       <img src="@/assets/img/home/banner.webp" alt="">
@@ -13,8 +13,12 @@
   </div>
 </template>
 
+
+<script>
+  export default { name: "home" }
+</script>
 <script setup>
-import { watch, computed } from 'vue'
+import { watch, onActivated, ref } from 'vue'
 import useHomeStore from '@/stores/modules/home';
 import HomeNavBar from './npns/HomeNavBar.vue'
 import HomeSearchBox from './npns/HomeSearchBox.vue'
@@ -22,6 +26,7 @@ import HomeCategories from './npns/HomeCategories.vue';
 import HomeContent from './npns/HomeContent.vue'
 import useScroll from '@/hooks/useScroll'
 import searchBar from '@/components/search-bar/search-bar.vue';
+import { computed } from '@vue/reactivity';
 
 // 发送网络请求
 const homeStore = useHomeStore()
@@ -37,7 +42,10 @@ homeStore.fetchHouseList()
 // useScroll(() => {
 //   homeStore.fetchHouseList()
 // })
-const { isReachBottom, scrollTop } = useScroll()
+
+// 监听滚动到底部
+const homeRef = ref()
+const { isReachBottom, scrollTop } = useScroll(homeRef)
 // const { scrollTop } = useScroll()
 watch(isReachBottom, (newValue) => {
   if(newValue) {
@@ -52,10 +60,20 @@ const isShowSearchBar = computed(() => {
   // return scrollTop >= 360
 })
 
+// 跳转回home时, 保留原来的位置
+onActivated(() => {
+  homeRef.value?.scrollTo({
+    top: scrollTop.value
+  })
+})
+
 </script>
 
 <style lang="less" scoped>
 .home {
+  height: 100vh;
+  overflow-y: auto;
+  box-sizing: border-box;
   padding-bottom: 60px;
 }
 

@@ -1,5 +1,5 @@
-import { onMounted, onUnmounted, ref } from 'vue';
-import { throttle } from 'underscore'
+import { onMounted, onUnmounted, ref } from "vue";
+import { throttle } from "underscore";
 // 监听window窗口的滚动
 // 1.当我们离开页面时, 我们移除监听
 // 2.如果别的页面也进行类似的监听, 会编写重复代码
@@ -25,31 +25,40 @@ import { throttle } from 'underscore'
 
 //   return scrollTop
 // }
-export default function useScroll() {
-  const isReachBottom = ref(false)
+export default function useScroll(elRef) {
+  let el = window;
 
-  const clientHeight = ref(0)
-  const scrollTop = ref(0)
-  const scrollHeight = ref(0)
+  const isReachBottom = ref(false);
+
+  const clientHeight = ref(0);
+  const scrollTop = ref(0);
+  const scrollHeight = ref(0);
 
   // 防抖/节流
   const scrollListenerHandler = throttle(() => {
-    clientHeight.value = document.documentElement.clientHeight
-    scrollTop.value = document.documentElement.scrollTop
-    scrollHeight.value = document.documentElement.scrollHeight
-    if (clientHeight.value + scrollTop.value >= scrollHeight.value - 1) {
-      console.log("滚动到底部了")
-      isReachBottom.value = true
+    if (el === window) {
+      clientHeight.value = document.documentElement.clientHeight;
+      scrollTop.value = document.documentElement.scrollTop;
+      scrollHeight.value = document.documentElement.scrollHeight;
+    } else {
+      clientHeight.value = el.clientHeight
+      scrollTop.value = el.scrollTop
+      scrollHeight.value = el.scrollHeight
     }
-  },1000)
-  
-  onMounted(() => {
-    window.addEventListener("scroll", scrollListenerHandler)
-  })
-  
-  onUnmounted(() => {
-    window.removeEventListener("scroll", scrollListenerHandler)
-  })
+    if (clientHeight.value + scrollTop.value >= scrollHeight.value - 1) {
+      console.log("滚动到底部了");
+      isReachBottom.value = true;
+    }
+  }, 100);
 
-  return { isReachBottom, scrollHeight, scrollTop, clientHeight }
+  onMounted(() => {
+    if (elRef) el = elRef.value
+    el.addEventListener("scroll", scrollListenerHandler);
+  });
+
+  onUnmounted(() => {
+    el.removeEventListener("scroll", scrollListenerHandler);
+  });
+
+  return { isReachBottom, scrollHeight, scrollTop, clientHeight };
 }
